@@ -1,0 +1,85 @@
+{{ define "auth.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <script src="https://unpkg.com/vue@3"></script>
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-plus"></script>
+    <title>Auth Page</title>
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-main>
+                <div class="login-container">
+                    <h2>Please enter your token</h2>
+                    <el-input v-model="token" placeholder="Enter your token" style="width: 150px;"></el-input>
+                    <el-button type="primary" @click="submitToken" style="margin-top: 1em;">Submit</el-button>
+                </div>
+            </el-main>
+        </el-container>
+    </div>
+
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    token: ""
+                };
+            },
+            methods: {
+                submitToken() {
+                    fetch('/api/auth', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            // 将 token 作为 JSON 数据发送
+                            body: JSON.stringify({ token: this.token })
+                        })
+                        .then(response => {
+                            // 检查网络请求是否成功
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            // 解析 JSON 数据
+                            return response.json();
+                        })
+                        .then(data => {
+                            // 处理从后端返回的数据
+                            if (data.status_code == 0) {
+                                // 如果后端返回的数据中包含成功字段
+                                window.location.href = '/'; // 重定向到主页
+                            } else {
+                                alert(data.status_msg);
+                            }
+                        })
+                        .catch(error => {
+                            // 处理网络请求或 JSON 解析错误
+                            console.error('There was a problem with your fetch operation:', error);
+                            alert('There was a problem with your fetch operation. Please try again later.');
+                        });
+                }
+            }
+        });
+
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+
+    <style>
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+    </style>
+</body>
+</html>
+{{ end }}
