@@ -21,4 +21,6 @@
 go.work
 
 # Custom
-config/
+config.yml
+logs/
+output/

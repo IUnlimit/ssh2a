@@ -10,22 +10,9 @@ log:
   # 是否开启控制台颜色
   colorful: true
 
-# TODO
-port:
-  ssh: 10220
-  http: 10221
-
-# ip 白名单
-whitelist: []
-
-# 鉴权配置
-authentication:
-  # 鉴权类型
-  # - token 固定 token 鉴权
-  # - secret 使用 google-authenticator 生成的标准六位验证码鉴权
-  # - pam /etc/pam.d/sshd 拦截，不启用转发
-  type: ""
-  # 鉴权 Token
-  token: ""
-  # base32-no-padding-encoded-string
-  secret: ""
+# http 验证密码
+authorization:
+  # 验证类型
+  # - basic 进入网页输入密码 / 携带 Bearer 请求头验证 / 请求 API 验证
+  type: 'basic'
+  bearer: '123456'
