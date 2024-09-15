@@ -3,6 +3,8 @@ package configs
 import "embed"
 
 //go:embed config.yml
-var Config embed.FS
+var ConfigFile embed.FS
 
-var ConfigFileName = "config.yml"
+const ParentPath = "./"
+
+const ConfigFileName = "config.yml"

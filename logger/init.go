@@ -1,10 +1,11 @@
 package logger
 
 import (
+	"github.com/IUnlimit/ssh2a/conf"
+	"github.com/IUnlimit/ssh2a/configs"
 	"path"
 	"time"
 
-	global "github.com/IUnlimit/ssh2a/internal"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	log "github.com/sirupsen/logrus"
 )
@@ -12,31 +13,30 @@ import (
 const Prefix = "SSH2A"
 
 func Init() {
-	initLog()
+	initLog(conf.Config.Log, configs.ParentPath)
 }
 
-func initLog() {
-	config := global.Config
+func initLog(conf *configs.Log, parentPath string) {
 	rotateOptions := []rotatelogs.Option{
 		rotatelogs.WithRotationTime(time.Hour * 24),
 	}
-	rotateOptions = append(rotateOptions, rotatelogs.WithMaxAge(config.Log.Aging))
-	if config.Log.ForceNew {
+	rotateOptions = append(rotateOptions, rotatelogs.WithMaxAge(conf.Aging))
+	if conf.ForceNew {
 		rotateOptions = append(rotateOptions, rotatelogs.ForceNewFile())
 	}
 
-	w, err := rotatelogs.New(path.Join(global.ParentPath+"/logs", "%Y-%m-%d.log"), rotateOptions...)
+	w, err := rotatelogs.New(path.Join(parentPath+"/logs", "%Y-%m-%d.log"), rotateOptions...)
 	if err != nil {
 		log.Errorf("Rotatelogs init err: %v", err)
 		panic(err)
 	}
 
-	levels := GetLogLevel(config.Log.Level)
+	levels := GetLogLevel(conf.Level)
 	log.SetLevel(levels[0]) // hook levels doesn't work
 	log.SetReportCaller(true)
 	consoleFormatter := LogFormat{
 		Prefix:      Prefix,
-		EnableColor: config.Log.Colorful,
+		EnableColor: conf.Colorful,
 	}
 	fileFormatter := LogFormat{
 		Prefix:      Prefix,
