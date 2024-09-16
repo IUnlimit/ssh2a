@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        input[type="password"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            border: 2px solid #ccc;
+            border-right: none;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-left: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 5px 5px 0;
+            outline: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            margin-top: 10px;
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-group">
+        <div style="margin-bottom: 80px; text-align: center">
+            <h1>SSH2A</h1>
+            <h1>Web Authorization</h1>
+        </div>
+        <div class="input-container" style="margin-bottom: 10px;">
+            <input type="text" id="remote-ip" placeholder="Enter your remote ip" value="{{ .remoteIP }}" />
+        </div>
+        <div class="input-container">
+            <input type="password" id="password" placeholder="Enter your password" />
+            <button onclick="authenticate()">→</button>
+        </div>
+        <div id="error-message" class="error"></div>
+    </div>
+</div>
+
+<script>
+    function authenticate() {
+        const password = document.getElementById('password').value;
+        const remoteIP = document.getElementById('remote-ip').value;
+        const errorMessage = document.getElementById('error-message');
+        errorMessage.textContent = ''; // Clear previous error message
+
+        // 发起POST请求
+        fetch('/api/v1/auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password, remoteIP })
+        })
+        .then(response => {
+            if (response.ok) {
+                // 验证成功，跳转到新页面
+                window.location.href = '/pass';
+            } else {
+                // 验证失败，显示错误信息
+                return response.json().then(data => {
+                    errorMessage.textContent = data.message || 'Authentication failed';
+                });
+            }
+        })
+        .catch(error => {
+            // 捕获其他错误
+            errorMessage.textContent = 'An error occurred. Please try again.';
+        });
+    }
+</script>
+
+</body>
+</html>

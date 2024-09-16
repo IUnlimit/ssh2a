@@ -13,6 +13,12 @@ log:
 # http 验证密码
 authorization:
   # 验证类型
-  # - basic 进入网页输入密码 / 携带 Bearer 请求头验证 / 请求 API 验证
+  # - basic 进入网页输入密码 / 携带请求头验证
+  # - authenticator 谷歌 2FA 验证
   type: 'basic'
-  bearer: '123456'
+  basic:
+    # 密匙
+    # 在网页直接输入 / 使用 Authorization 请求头进行验证
+    secret: '123456'
+  authenticator:
+    xx: ''
