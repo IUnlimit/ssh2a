@@ -10,15 +10,23 @@ log:
   # 是否开启控制台颜色
   colorful: true
 
+bind:
+  host: 127.0.0.1
+  http-port: 9022
+  ssh-port: 9022
+
 # http 验证密码
 authorization:
   # 验证类型
   # - basic 进入网页输入密码 / 携带请求头验证
-  # - authenticator 谷歌 2FA 验证
-  type: 'basic'
+  # - authenticator 2FA 验证
+  type: 'authenticator'
   basic:
-    # 密匙
-    # 在网页直接输入 / 使用 Authorization 请求头进行验证
+    # 验证密匙
+    # 在网页直接输入 / 使用 Authorization 请求头访问 /api/v1/auth 进行验证
     secret: '123456'
   authenticator:
-    xx: ''
+    # 个人密匙
+    # 用于生成可订阅的 2FA 密匙
+    # 在网页直接输入 / 使用 Authorization 请求头访问 /api/v1/auth 进行验证
+    private-secret: ''
