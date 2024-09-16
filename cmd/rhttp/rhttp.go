@@ -2,6 +2,7 @@ package rhttp
 
 import (
 	"fmt"
+	"github.com/IUnlimit/ssh2a/cache"
 	"github.com/IUnlimit/ssh2a/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/libp2p/go-reuseport"
@@ -11,7 +12,10 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 )
+
+var IPCache = cache.NewIPCountCache("http", 256, 3*time.Hour)
 
 func Listen(host string, port int, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -20,13 +24,12 @@ func Listen(host string, port int, wg *sync.WaitGroup) {
 
 	engine := gin.Default()
 	engine.Use(gin.Recovery())
-	//	 net.Listener
+	engine.LoadHTMLGlob("templates/*")
+	engine.GET("/", login)
+	engine.GET("/pass", pass)
+
 	v1 := engine.Group("/api/v1")
-	v1.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	v1.POST("/auth", auth)
 
 	log.Infof("Http server starting on %s:%d", host, port)
 	err := http.Serve(multipleAbleHttpListen(host, port), engine)

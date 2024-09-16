@@ -1,10 +1,9 @@
 package rssh
 
 import (
-	"errors"
 	"fmt"
 	"github.com/IUnlimit/ssh2a/cache"
-	"github.com/bluele/gcache"
+	"github.com/IUnlimit/ssh2a/cmd/rhttp"
 	"github.com/libp2p/go-reuseport"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"time"
 )
+
+var sshIPCache = cache.NewIPCountCache("SSH", 512, 24*time.Hour)
 
 func Listen(host string, port int, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -47,9 +48,9 @@ func handleConnection(conn net.Conn) {
 	}
 
 	// 检查是否在白名单中
-	checkWL := true
-	err = cache.UpdateIPStatus(ip, checkWL)
-	if err != nil && !errors.Is(err, gcache.KeyNotFoundError) {
+	var checkWL = rhttp.IPCache.CheckPassed(ip)
+	err = sshIPCache.UpdateIPStatus(ip, checkWL)
+	if err != nil {
 		log.Errorf("Error updating ip cache, %v", err)
 		return
 	}
