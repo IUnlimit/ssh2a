@@ -11,8 +11,8 @@ log:
   colorful: true
 
 bind:
-  host: 127.0.0.1
-  http-port: 9022
+  host: 0.0.0.0
+  http-port: 9080
   ssh-port: 9022
 
 # http 验证密码
@@ -30,3 +30,21 @@ authorization:
     # 用于生成可订阅的 2FA 密匙
     # 在网页直接输入 / 使用 Authorization 请求头访问 /api/v1/auth 进行验证
     private-secret: ''
+
+# 数据库配置
+database:
+  host: 127.0.0.1
+  port: 5432
+  user: postgres
+  password: '123456'
+  dbname: ssh2a
+
+# 蜜罐配置
+honeypot:
+  # 被拒绝后多久未验证、再次请求SSH则进入蜜罐
+  trigger-timeout: 3m
+
+# 认证策略
+auth:
+  # 验证通过后SSH放行持续时间
+  valid-duration: 30m

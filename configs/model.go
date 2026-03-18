@@ -6,6 +6,9 @@ type Config struct {
 	Log           *Log           `yaml:"log"`
 	Bind          *Bind          `yaml:"bind,omitempty"`
 	Authorization *Authorization `yaml:"authorization"`
+	Database      *Database      `yaml:"database"`
+	Honeypot      *Honeypot      `yaml:"honeypot"`
+	Auth          *AuthPolicy    `yaml:"auth"`
 }
 
 type Log struct {
@@ -33,4 +36,20 @@ type Basic struct {
 
 type Authenticator struct {
 	PrivateSecret string `yaml:"private-secret,omitempty"`
+}
+
+type Database struct {
+	Host     string `yaml:"host,omitempty"`
+	Port     int    `yaml:"port,omitempty"`
+	User     string `yaml:"user,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	DBName   string `yaml:"dbname,omitempty"`
+}
+
+type Honeypot struct {
+	TriggerTimeout time.Duration `yaml:"trigger-timeout,omitempty"`
+}
+
+type AuthPolicy struct {
+	ValidDuration time.Duration `yaml:"valid-duration,omitempty"`
 }
