@@ -27,7 +27,11 @@
         SSH access granted. You can now connect via SSH.
       </div>
 
-      <form v-else @submit.prevent="handleAuth" class="auth-form">
+      <div v-else-if="status && !status.has_record" class="hint-msg">
+        No SSH access attempt detected from your IP. Please try connecting via SSH first.
+      </div>
+
+      <form v-else-if="status && status.has_record" @submit.prevent="handleAuth" class="auth-form">
         <input
           v-model="password"
           type="password"
@@ -218,6 +222,16 @@ onMounted(fetchStatus)
   border-radius: var(--radius);
   padding: 14px;
   color: var(--success);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.hint-msg {
+  background: rgba(139, 143, 163, 0.1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--text-dim);
   font-size: 14px;
   margin-bottom: 16px;
 }
