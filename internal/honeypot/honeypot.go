@@ -1,20 +1,35 @@
 package honeypot
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 
 	"github.com/IUnlimit/ssh2a/internal/db"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 )
 
-const hostKeyPath = "ssh2a_host_key"
+// 常见的 SSH host key 路径，按优先级排列
+var sshHostKeyPaths = []string{
+	"/etc/ssh/ssh_host_ed25519_key",
+	"/etc/ssh/ssh_host_ecdsa_key",
+	"/etc/ssh/ssh_host_rsa_key",
+}
+
+var cachedHostKey ssh.Signer
+
+// Init 初始化蜜罐，加载 host key
+// 优先读取本机 sshd 的 host key，保证蜜罐和转发使用同一指纹
+func Init() {
+	key, source, err := loadHostKey()
+	if err != nil {
+		log.Fatalf("[Honeypot] Failed to load any SSH host key: %v", err)
+	}
+	cachedHostKey = key
+	log.Infof("[Honeypot] Using host key from %s", source)
+}
 
 // HandleConnection 处理蜜罐 SSH 连接
 // 接受连接，记录用户名和密码，然后拒绝认证
@@ -38,42 +53,45 @@ func HandleConnection(conn net.Conn, ip string) {
 		MaxAuthTries: 3,
 	}
 
-	hostKey, err := loadOrGenerateHostKey()
-	if err != nil {
-		log.Errorf("[Honeypot] Failed to load host key: %v", err)
-		return
-	}
-	config.AddHostKey(hostKey)
+	config.AddHostKey(cachedHostKey)
 
 	// 进行 SSH 握手，这会触发 PasswordCallback
-	_, _, _, err = ssh.NewServerConn(conn, config)
+	_, _, _, err := ssh.NewServerConn(conn, config)
 	if err != nil {
 		// 预期行为：客户端认证失败后断开
 		log.Debugf("[Honeypot] Connection from %s ended: %v", ip, err)
 	}
 }
 
-// loadOrGenerateHostKey 加载或生成 SSH host key
-func loadOrGenerateHostKey() (ssh.Signer, error) {
-	// 尝试从文件加载
-	if data, err := os.ReadFile(hostKeyPath); err == nil {
-		return ssh.ParsePrivateKey(data)
+// loadHostKey 按优先级尝试加载本机 sshd 的 host key
+func loadHostKey() (ssh.Signer, string, error) {
+	// 1. 优先尝试本机 sshd 的 host key
+	for _, p := range sshHostKeyPaths {
+		data, err := os.ReadFile(p)
+		if err != nil {
+			continue
+		}
+		signer, err := ssh.ParsePrivateKey(data)
+		if err != nil {
+			log.Warnf("[Honeypot] Found %s but failed to parse: %v", p, err)
+			continue
+		}
+		return signer, p, nil
 	}
 
-	// 生成新的 RSA key
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate RSA key: %w", err)
+	// 2. 尝试 /etc/ssh/ 下任意 host key 文件
+	matches, _ := filepath.Glob("/etc/ssh/ssh_host_*_key")
+	for _, p := range matches {
+		data, err := os.ReadFile(p)
+		if err != nil {
+			continue
+		}
+		signer, err := ssh.ParsePrivateKey(data)
+		if err != nil {
+			continue
+		}
+		return signer, p, nil
 	}
 
-	// 保存到文件
-	pemData := pem.EncodeToMemory(&pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
-	})
-	if err := os.WriteFile(hostKeyPath, pemData, 0600); err != nil {
-		log.Warnf("[Honeypot] Failed to save host key: %v", err)
-	}
-
-	return ssh.NewSignerFromKey(key)
+	return nil, "", fmt.Errorf("no SSH host key found in /etc/ssh/")
 }

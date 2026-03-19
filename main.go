@@ -9,6 +9,7 @@ import (
 	"github.com/IUnlimit/ssh2a/conf"
 	"github.com/IUnlimit/ssh2a/internal/cache"
 	"github.com/IUnlimit/ssh2a/internal/db"
+	"github.com/IUnlimit/ssh2a/internal/honeypot"
 	"github.com/IUnlimit/ssh2a/logger"
 	"github.com/IUnlimit/ssh2a/tools"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +21,9 @@ func main() {
 
 	// 初始化数据库
 	db.Init(conf.Config.Database)
+
+	// 初始化蜜罐（加载本机 sshd host key）
+	honeypot.Init()
 
 	// 初始化 IP 缓存
 	ipCache := cache.NewIPCache(
