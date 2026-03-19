@@ -4,12 +4,6 @@ English | [简体中文](./README.md)
 
 SSH2A is an SSH access authorization gateway that provides web-based authentication and honeypot protection for SSH ports.
 
-## Screenshots
-
-| Login | Admin Panel |
-|:---:|:---:|
-| ![Login](./docs/vue-login.png) | *Coming soon* |
-
 ## How It Works
 
 ```
@@ -32,6 +26,15 @@ Client --HTTP--> [9080] SSH2A Web UI
 - **Light/Dark Mode** — Frontend theme toggle with localStorage persistence
 - **PostgreSQL Storage** — All records persisted to database
 - **Single Binary** — Frontend embedded into Go binary via `embed`
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/view-login.png" width="400" /><br/><sub>Login Page</sub></td>
+    <td align="center"><img src="docs/view-admin.png" width="400" /><br/><sub>Admin Panel</sub></td>
+  </tr>
+</table>
 
 ## Quick Start
 
