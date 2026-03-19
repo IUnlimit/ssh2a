@@ -29,12 +29,10 @@ Client --HTTP--> [9080] SSH2A Web UI
 
 ## Screenshots
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/view-login.png" width="400" /><br/><sub>Login Page</sub></td>
-    <td align="center"><img src="docs/view-admin.png" width="400" /><br/><sub>Admin Panel</sub></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/view-login.png" width="400" /><br/>
+  <sub>Login Page</sub>
+</p>
 
 ## Quick Start
 
