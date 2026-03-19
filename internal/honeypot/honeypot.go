@@ -1,6 +1,7 @@
 package honeypot
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -65,33 +66,44 @@ func HandleConnection(conn net.Conn, ip string) {
 
 // loadHostKey 按优先级尝试加载本机 sshd 的 host key
 func loadHostKey() (ssh.Signer, string, error) {
-	// 1. 优先尝试本机 sshd 的 host key
-	for _, p := range sshHostKeyPaths {
+	var permDenied []string
+
+	tryLoad := func(p string) (ssh.Signer, bool) {
 		data, err := os.ReadFile(p)
 		if err != nil {
-			continue
+			if errors.Is(err, os.ErrPermission) {
+				permDenied = append(permDenied, p)
+			}
+			return nil, false
 		}
 		signer, err := ssh.ParsePrivateKey(data)
 		if err != nil {
 			log.Warnf("[Honeypot] Found %s but failed to parse: %v", p, err)
-			continue
+			return nil, false
 		}
-		return signer, p, nil
+		return signer, true
+	}
+
+	// 1. 优先尝试本机 sshd 的 host key
+	for _, p := range sshHostKeyPaths {
+		if signer, ok := tryLoad(p); ok {
+			return signer, p, nil
+		}
 	}
 
 	// 2. 尝试 /etc/ssh/ 下任意 host key 文件
 	matches, _ := filepath.Glob("/etc/ssh/ssh_host_*_key")
 	for _, p := range matches {
-		data, err := os.ReadFile(p)
-		if err != nil {
-			continue
+		if signer, ok := tryLoad(p); ok {
+			return signer, p, nil
 		}
-		signer, err := ssh.ParsePrivateKey(data)
-		if err != nil {
-			continue
-		}
-		return signer, p, nil
 	}
 
+	if len(permDenied) > 0 {
+		return nil, "", fmt.Errorf(
+			"permission denied reading SSH host key(s): %v — run with sudo or grant read access",
+			permDenied,
+		)
+	}
 	return nil, "", fmt.Errorf("no SSH host key found in /etc/ssh/")
 }
