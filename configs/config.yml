@@ -48,3 +48,10 @@ honeypot:
 auth:
   # 验证通过后SSH放行持续时间
   valid-duration: 30m
+
+# 管理台配置
+admin:
+  # 允许访问管理台的IP列表，为空则不限制
+  allowed-hosts:
+    - 127.0.0.1
+    - ::1

@@ -9,6 +9,7 @@ type Config struct {
 	Database      *Database      `yaml:"database"`
 	Honeypot      *Honeypot      `yaml:"honeypot"`
 	Auth          *AuthPolicy    `yaml:"auth"`
+	Admin         *Admin         `yaml:"admin"`
 }
 
 type Log struct {
@@ -52,4 +53,8 @@ type Honeypot struct {
 
 type AuthPolicy struct {
 	ValidDuration time.Duration `yaml:"valid-duration,omitempty"`
+}
+
+type Admin struct {
+	AllowedHosts []string `yaml:"allowed-hosts,omitempty"`
 }
